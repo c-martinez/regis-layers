@@ -1,0 +1,28 @@
+{
+  "name": "regis-layers",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/c-martinez/regis-layers"
+  },
+  "author": {
+    "name": "Carlos",
+    "email": "c.martinez@esciencecenter.nl"
+  },
+  "keywords": [
+    "angular"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "http://github.com/c-martinez/regis-layers/issues"
+  },
+  "main": "regis-layers.umd.js",
+  "module": "regis-layers.js",
+  "jsnext:main": "regis-layers.js",
+  "typings": "regis-layers.d.ts",
+  "peerDependencies": {
+    "@angular/core": "^4.0.0",
+    "rxjs": "^5.1.0",
+    "zone.js": "^0.8.4"
+  }
+}
