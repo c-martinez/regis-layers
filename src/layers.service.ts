@@ -12,6 +12,7 @@ import { LeafletConnector } from './connectors/leaflet.connector';
 export class LayersService {
   private layers: BaseLayer[] = []; // Meta-data of the layer (generic)
   private mapLayers: any[] = [];    // Implementation specific layer (e.g. Leaflet Layer object)
+  private layerMapping: { [key: string]: any; } = { };  // Does the typing add anything ?
   private connector: Connector;
 
   constructor(private http: HttpClient) {
@@ -23,19 +24,32 @@ export class LayersService {
 
     this.layers.push(layer);
 
-    // this.mapLayers.push(mapLayer);
-    mapLayerPromise.subscribe(data => this.mapLayers.push(data));
+    mapLayerPromise.subscribe(mapLayer => {
+      this.mapLayers.push(mapLayer)
+      this.layerMapping[layer.id] = mapLayer;
+    });
   }
 
+  /**
+   * These are the abstract representation of the layers.
+   */
   public getLayers() {
     // Return an immutable copy instead of actual list...
     return this.layers;
   }
 
+  /**
+   * These are the layers for the map.
+   */
   public getMapLayers() {
-    console.log('These are the layers for your map: ');
-    console.log(this.mapLayers);
+
     // Return an immutable copy instead of actual list...
     return this.mapLayers;
+  }
+
+  public setLayerVisibility(layer: BaseLayer, active: boolean) {
+    const mapLayer = this.layerMapping[layer.id];
+    this.connector.setLayerVisibility(mapLayer, active, layer.type);
+    layer.active = active;
   }
 }

@@ -11,6 +11,8 @@ import { LayersService } from './layers.service';
 export * from './layers.service';
 
 export { GeoJsonLayer } from './layers/geojsonlayer';
+export { GroupLayer } from './layers/grouplayer';
+export { ImageLayer } from './layers/imagelayer';
 
 @NgModule({
   imports: [
