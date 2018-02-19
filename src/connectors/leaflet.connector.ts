@@ -12,13 +12,16 @@ import { BaseLayer } from '../layers/baselayer';
 import { GeoJsonLayer } from '../layers/geojsonlayer';
 import { GroupLayer } from '../layers/grouplayer';
 import { ImageLayer } from '../layers/imagelayer';
+import { DynamicLayer } from '../layers/dynamiclayer';
 
 export class LeafletConnector extends Connector {
     private defaultStyle = {
         opacity: 1,
         fillOpacity: 0.5
     };
+    private myDynamicLayerData;
 
+    
     constructor(private http: HttpClient) {
         super();
     }
@@ -51,10 +54,55 @@ export class LeafletConnector extends Connector {
                 leafletLayer = imageOverlay(imageLayer.dataSource, imageLayer.bounds /*[[42, -100], [40, -110]]*/);
                 leafletLayer = Observable.of(leafletLayer);
                 break;
+            case 'dynamic':
+                const dynamicLayer = <DynamicLayer> layer;
+                leafletLayer = this.buildDynamicLayer();
+                leafletLayer = Observable.of(leafletLayer);
+                break;
             default:
                 console.log('RegisLeafletConnector: unknown layer type: ' + layer.type);
         }
         return leafletLayer;
+    }
+
+    private dynamicLayerTick() {
+        // this.myDynamicLayerData.layer.clearLayers();
+
+        let center = this.myDynamicLayerData.circle.getLatLng();
+
+        const slices = 36;
+        this.myDynamicLayerData.counter += 1;
+        if (this.myDynamicLayerData.counter === slices) {
+            this.myDynamicLayerData.counter = 0;
+        }
+
+        const angle = 2 * Math.PI / slices * this.myDynamicLayerData.counter;
+
+        center.lat += Math.cos(angle);
+        center.lng += Math.sin(angle);
+
+        this.myDynamicLayerData.circle.setLatLng(center);
+    }
+
+    private buildDynamicLayer(): LayerGroup {
+        let center = [45, -50];
+        const radius = 150;
+        let myCircle = circle(center, radius * 1000, {
+            color: '#000000', fillColor: '#ffed6f'
+        });
+        let myLayer = layerGroup()
+        myLayer.addLayer(myCircle);
+
+        setInterval(() => {
+            this.dynamicLayerTick();
+        }, 500);
+
+        this.myDynamicLayerData = {
+            counter: 0,
+            layer: myLayer,
+            circle: myCircle
+        };
+        return this.myDynamicLayerData.layer;
     }
 
     private buildGeoJson(geoDataNew) {
