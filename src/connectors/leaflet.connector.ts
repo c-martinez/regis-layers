@@ -21,7 +21,6 @@ export class LeafletConnector extends Connector {
     };
     private myDynamicLayerData;
 
-    
     constructor(private http: HttpClient) {
         super();
     }
@@ -31,8 +30,9 @@ export class LeafletConnector extends Connector {
         switch (layer.type) {
             case 'circle':
                 // leafletLayer = 'build a circle...';
-                let radius = 10000;
-                leafletLayer = circle([44.8, -121.85], radius, this.defaultStyle);
+                let radius = 50000;
+                let center = [44.8, -5];
+                leafletLayer = circle(center, radius, this.defaultStyle);
                 leafletLayer = Observable.of(leafletLayer);
                 break;
             case 'polygon':

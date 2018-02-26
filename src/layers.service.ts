@@ -10,6 +10,8 @@ import { DynamicLayer } from './layers/dynamiclayer';
 import { Connector } from './connectors/base.connector';
 import { LeafletConnector } from './connectors/leaflet.connector';
 
+import { BackendService } from './backend.service';
+
 @Injectable()
 export class LayersService {
   private layers: BaseLayer[] = []; // Meta-data of the layer (generic)
@@ -17,16 +19,10 @@ export class LayersService {
   private layerMapping: { [key: string]: any; } = {};  // Does the typing add anything ?
   private connector: Connector;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private backend: BackendService) {
     this.connector = new LeafletConnector(http);
 
-    const layerServiceUrl = 'http://localhost:4201/layers/';
-    console.log('RegisLayerService: layer definition should come from config.');
-    console.log('RegisLayerService: url: ' + layerServiceUrl);
-    // const layerServiceUrl = 'http://localhost:4200/assets/layerdefinitions.json';
-
-    http.get(layerServiceUrl)
-      .subscribe(
+    backend.getLayerDefinitions().subscribe(
         defs => this.parseLayerDefinition(defs),
         error => {
           console.error('RegisLayerService: Error loading layer definition.');
@@ -71,6 +67,12 @@ export class LayersService {
    */
   public addLayer(layer: BaseLayer) {
     console.log('RegisLayerService: Should add layer to backend storage...');
+    let req = this.backend.storeLayerDefinition();
+    req.subscribe(data => {
+      console.log('RegisLayerService: got data from layer add post');
+      console.log(data);
+    });
+
     this.displayLayer(layer);
   }
 
