@@ -13,6 +13,7 @@ export { BackendService } from './backend.service';
 export { GeoJsonLayer } from './layers/geojsonlayer';
 export { GroupLayer } from './layers/grouplayer';
 export { ImageLayer } from './layers/imagelayer';
+export { CircleLayer } from './layers/circlelayer';
 
 @NgModule({
   imports: [

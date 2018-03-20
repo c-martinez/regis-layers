@@ -73,6 +73,7 @@
     "node": ">=6.0.0"
   },
   "dependencies": {
-    "@asymmetrik/ngx-leaflet": "2.5.3"
+    "@asymmetrik/ngx-leaflet": "2.5.3",
+    "leaflet": "^1.2.0"
   }
 }

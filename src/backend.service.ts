@@ -18,17 +18,18 @@ export class BackendService {
         return this.http.get<LayersDef>(layerServiceUrl);
     }
 
-    public storeLayerDefinition() {
+    public storeLayerDefinition(layerDef) {
         const layerServiceUrl = this.baseUrl + 'layers/add/';
-        // const layerServiceUrl = 'http://localhost:4200/assets/layerdefinitions.json';
-        console.log('RegisLayerService: url: ' + layerServiceUrl);
-        const defData = {
-            data: 'someData',
-            format: 'json',
-            source: 'random'
-        };
 
-        return this.http.post(layerServiceUrl, defData);
+        console.log('RegisLayerService: url: ' + layerServiceUrl);
+        const formData = new FormData();
+        for (let key in layerDef) {
+            if (layerDef.hasOwnProperty(key)) {
+                formData.append(key, layerDef[key]);
+            }
+        }
+
+        return this.http.post(layerServiceUrl, formData);
     }
 }
 

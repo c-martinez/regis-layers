@@ -6,6 +6,7 @@ import { GeoJsonLayer } from './layers/geojsonlayer';
 import { GroupLayer } from './layers/grouplayer';
 import { ImageLayer } from './layers/imagelayer';
 import { DynamicLayer } from './layers/dynamiclayer';
+import { CircleLayer } from './layers/circlelayer';
 
 import { Connector } from './connectors/base.connector';
 import { LeafletConnector } from './connectors/leaflet.connector';
@@ -15,8 +16,9 @@ import { BackendService } from './backend.service';
 @Injectable()
 export class LayersService {
   private layers: BaseLayer[] = []; // Meta-data of the layer (generic)
-  private mapLayers: any[] = [];    // Implementation specific layer (e.g. Leaflet Layer object)
-  private layerMapping: { [key: string]: any; } = {};  // Does the typing add anything ?
+  private mapLayers: any[] = [];    // Implementation specific layer (e.g. Leaflet Layer object) -- also holds markers
+  private layerMapping: { [key: number]: any; } = {};  // Does the typing add anything ?
+  private markerMapping: { [key: string]: any; } = {};
   private connector: Connector;
 
   constructor(private http: HttpClient, private backend: BackendService) {
@@ -35,6 +37,9 @@ export class LayersService {
       try {
         let regisLayer: BaseLayer;
         switch (layer['type']) {
+          case 'circle':
+            regisLayer = new CircleLayer(layer.id, layer.name, layer.visible, layer.center, layer.radius);
+            break;
           case 'geojson':
             regisLayer = new GeoJsonLayer(layer.id, layer.name, layer.visible, layer.url);
             break;
@@ -64,26 +69,58 @@ export class LayersService {
    * Creates a new layer (adds it to the definition of layers on backend) and adds
    * the newly created layer to the list of layers to be visualized on the map.
    * @param layer Abstract layer to be added to layer service.
+   * @param virtual Whether this layer is `virtual` -- virtual layers exist
+   * only temporarily (no persistent storage) and only on the map (not on list of layers).
    */
-  public addLayer(layer: BaseLayer) {
-    console.log('RegisLayerService: Should add layer to backend storage...');
-    let req = this.backend.storeLayerDefinition();
-    req.subscribe(data => {
-      console.log('RegisLayerService: got data from layer add post');
-      console.log(data);
-    });
+  public addLayer(layer: BaseLayer, virtual = false) {
+    if (! virtual) {
+      let req = this.backend.storeLayerDefinition(layer);
+      req.subscribe(data => {
+        console.log('RegisLayerService: got data from layer add post');
+        console.log(data);
+      });
+    }
 
-    this.displayLayer(layer);
+    this.displayLayer(layer, virtual);
+  }
+
+  public addMarker(lat: number, lng: number, draggable: boolean, name: string) {
+    const marker = this.connector.buildMarker(lat, lng, draggable);
+    this.mapLayers.push(marker);
+    this.markerMapping[name] = marker;
+    return marker;
+  }
+
+  public removeMarker(name: string) {
+    const marker = this.markerMapping[name];
+
+    const i = this.mapLayers.indexOf(marker);
+    if (i !== -1) {
+      this.mapLayers.splice(i, 1);
+    }
+  }
+
+  public removeLayer(id: string) {
+    const targetLayer = this.layerMapping[id];
+    const index = this.mapLayers.indexOf(targetLayer);
+    this.mapLayers.splice(index, 1);
   }
 
   /**
-   * Adds layer to map / list of available layers.
+   * Adds layer to map / list of available layers. The layer is NOT added to the backend --
+   * it is assumed that it was already added to the backend by some other means or that it
+   * does not need to be added to the backend at all.
+   *
    * @param layer abstract layer to be displayed.
+   * @param virtual Whether this layer is `virtual` -- virtual layers exist
+   * only temporarily (no persistent storage) and only on the map (not on list of layers).
    */
-  private displayLayer(layer: BaseLayer) {
+  public displayLayer(layer: BaseLayer, virtual = false) {
     const mapLayerPromise = this.connector.buildLayer(layer);
 
-    this.layers.push(layer);
+    if ( ! virtual) {
+      this.layers.push(layer);
+    }
 
     mapLayerPromise.subscribe(
       mapLayer => {

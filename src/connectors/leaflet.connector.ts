@@ -5,7 +5,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/map';
 
-import { tileLayer, latLng, Layer, LayerGroup, geoJSON, polygon, circle, layerGroup, imageOverlay } from 'leaflet';
+import { tileLayer, latLng, Layer, LayerGroup, geoJSON, circle, layerGroup, imageOverlay, Marker, Icon } from 'leaflet';
 
 import { Connector } from './base.connector';
 import { BaseLayer } from '../layers/baselayer';
@@ -13,11 +13,17 @@ import { GeoJsonLayer } from '../layers/geojsonlayer';
 import { GroupLayer } from '../layers/grouplayer';
 import { ImageLayer } from '../layers/imagelayer';
 import { DynamicLayer } from '../layers/dynamiclayer';
+import { CircleLayer } from '../layers/circlelayer';
 
 export class LeafletConnector extends Connector {
     private defaultStyle = {
         opacity: 1,
         fillOpacity: 0.5
+    };
+    private transparentStyle = {
+        weight: 1,
+        color: '#000000',
+        fillOpacity: 0.0
     };
     private myDynamicLayerData;
 
@@ -25,18 +31,27 @@ export class LeafletConnector extends Connector {
         super();
     }
 
+    public buildMarker(lat: number, lng: number, draggable: boolean) {
+        const iconWidth = 25;   // known size of ./assets/marker-icon.png
+        const iconHeight = 41;
+        const icon = new Icon({
+            iconUrl: './assets/marker-icon.png',
+            iconSize:   [iconWidth     , iconHeight],
+            iconAnchor: [iconWidth / 2 , iconHeight],
+        });
+        const marker = new Marker([ lat, lng], {
+            icon: icon,
+            draggable: draggable
+        });
+        return marker;
+    }
+
     public buildLayer(layer: BaseLayer): Layer {
         let leafletLayer: Layer = 'None';
         switch (layer.type) {
             case 'circle':
-                // leafletLayer = 'build a circle...';
-                let radius = 50000;
-                let center = [44.8, -5];
-                leafletLayer = circle(center, radius, this.defaultStyle);
-                leafletLayer = Observable.of(leafletLayer);
-                break;
-            case 'polygon':
-                leafletLayer = polygon([[46.8, -121.85], [46.92, -121.92], [46.87, -121.8]], this.defaultStyle);
+                const circleLayer = <CircleLayer> layer;
+                leafletLayer = circle(circleLayer.center, circleLayer.radius, this.transparentStyle);
                 leafletLayer = Observable.of(leafletLayer);
                 break;
             case 'geojson':
@@ -140,7 +155,6 @@ export class LeafletConnector extends Connector {
         let newStyle: any;
         switch (type) {
             case 'circle':
-            case 'polygon':
                 newStyle = active ? this.defaultStyle : styleHidden;
                 leafletLayer.setStyle(newStyle);
                 break;
