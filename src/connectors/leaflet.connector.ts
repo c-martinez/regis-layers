@@ -23,6 +23,7 @@ export class LeafletConnector extends Connector {
     private transparentStyle = {
         weight: 1,
         color: '#000000',
+        opacity: 1,
         fillOpacity: 0.0
     };
     private myDynamicLayerData;
@@ -155,7 +156,7 @@ export class LeafletConnector extends Connector {
         let newStyle: any;
         switch (type) {
             case 'circle':
-                newStyle = active ? this.defaultStyle : styleHidden;
+                newStyle = active ? this.transparentStyle : styleHidden;
                 leafletLayer.setStyle(newStyle);
                 break;
             case 'group_item':

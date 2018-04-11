@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { BaseLayer } from './layers/baselayer';
@@ -20,9 +20,11 @@ export class LayersService {
   private layerMapping: { [key: number]: any; } = {};  // Does the typing add anything ?
   private markerMapping: { [key: string]: any; } = {};
   private connector: Connector;
+  public changeEmitter: EventEmitter<BaseLayer[]>;
 
   constructor(private http: HttpClient, private backend: BackendService) {
     this.connector = new LeafletConnector(http);
+    this.changeEmitter = new EventEmitter();
 
     backend.getLayerDefinitions().subscribe(
         defs => this.parseLayerDefinition(defs),
@@ -120,6 +122,7 @@ export class LayersService {
 
     if ( ! virtual) {
       this.layers.push(layer);
+      this.changeEmitter.emit(this.layers);
     }
 
     mapLayerPromise.subscribe(
@@ -137,7 +140,7 @@ export class LayersService {
   /**
    * These are the abstract representation of the layers.
    */
-  public getLayers() {
+  public getLayers(): BaseLayer[] {
     // Return an immutable copy instead of actual list...
     return this.layers;
   }
