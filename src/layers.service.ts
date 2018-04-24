@@ -25,16 +25,23 @@ export class LayersService {
   constructor(private http: HttpClient, private backend: BackendService) {
     this.connector = new LeafletConnector(http);
     this.changeEmitter = new EventEmitter();
+    this.loadLayers();
+  }
 
-    backend.getLayerDefinitions().subscribe(
-        defs => this.parseLayerDefinition(defs),
-        error => {
-          console.error('RegisLayerService: Error loading layer definition.');
-          console.error(error);
-        });
+  public loadLayers(): void {
+    this.backend.getLayerDefinitions().subscribe(
+      defs => this.parseLayerDefinition(defs),
+      error => {
+        console.error('RegisLayerService: Error loading layer definition.');
+        console.error(error);
+      });
   }
 
   private parseLayerDefinition(defs: any) {
+    // Hacky way to clear an array without destroy existing array -- it works.
+    this.layers.length = 0;
+    this.mapLayers.length = 0;
+
     for (let layer of defs['layers']) {
       try {
         let regisLayer: BaseLayer;
