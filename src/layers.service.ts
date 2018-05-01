@@ -47,19 +47,19 @@ export class LayersService {
         let regisLayer: BaseLayer;
         switch (layer['type']) {
           case 'circle':
-            regisLayer = new CircleLayer(layer.id, layer.name, layer.visible, layer.center, layer.radius);
+            regisLayer = new CircleLayer(layer.id, layer.name, layer.active, layer.center, layer.radius);
             break;
           case 'geojson':
-            regisLayer = new GeoJsonLayer(layer.id, layer.name, layer.visible, layer.url);
+            regisLayer = new GeoJsonLayer(layer.id, layer.name, layer.active, layer.url);
             break;
           case 'group':
-            regisLayer = new GroupLayer(layer.id, layer.name, layer.visible, layer.url);
+            regisLayer = new GroupLayer(layer.id, layer.name, layer.active, layer.url);
             break;
           case 'image':
-            regisLayer = new ImageLayer(layer.id, layer.name, layer.visible, layer.url, layer.bounds);
+            regisLayer = new ImageLayer(layer.id, layer.name, layer.active, layer.url, layer.bounds);
             break;
           case 'dynamic':
-            regisLayer = new DynamicLayer(layer.id, layer.name, layer.visible, layer.url);
+            regisLayer = new DynamicLayer(layer.id, layer.name, layer.active, layer.url);
             break;
           default:
             console.error('RegisLayersService: unknown layer definition: ');
